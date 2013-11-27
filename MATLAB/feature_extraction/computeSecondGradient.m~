@@ -1,0 +1,33 @@
+function [g2x g2y g2t] = computeSecondGradient(threedmat)
+    % assume to be x by y by t
+    
+    x1Filter = [0, 0, 0;
+               -1, 0, 1;
+               0, 0, 0]; % apply to (:,:,i)
+    y1Filter = permute(x1Filter,[2 1]); % apply to (:,:,i)
+    t1Filter = permute(x1Filter,[2 1]); % apply to (i,:,:)
+    
+    x2Filter(:,:,1) = [-1 0 1;
+                       0 0 0;
+                       1 0 -1];
+    x2Filter(:,:,2) = [0 0 0;
+                       0 0 0;
+                       0 0 0];
+    x2Filter(:,:,3) = [1 0 -1;
+                       0 0 0;
+                       -1 0 1];
+    
+    y2Filter = permute(x2Filter,[2 1 3]);
+    t2Filter = permute(x2Filter,[3 1 2]); 
+                   
+    for i = 1:size(threedmat,3)
+        g1x(:,:,i) = conv2(threedmat(:,:,i),x1Filter,'valid');
+        g1y(:,:,i) = conv2(threedmat(:,:,i),y1Filter,'valid');
+        g1t(:,:,i) = conv2(threedmat(i,:,:),t1Filter,'valid');
+    end
+    
+        g2x(:,:,i) = convn(,x2Filter);
+        g2y(:,:,i) = convn(g1x,y2Filter);
+        g2t(:,:,i) = convn(g1x,t2Filter);
+    
+end

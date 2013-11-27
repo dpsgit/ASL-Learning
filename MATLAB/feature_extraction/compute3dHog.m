@@ -1,0 +1,98 @@
+function [featureList, timeList] = compute3dHog(imageStack)
+    % order expected is (r,c,t)
+    
+    cornerArray = FAST(uint8(imageStack));
+    
+    [g2x, g2y, g2t] = computeSecondGradient(double(imageStack));
+     
+    
+    fprintf('Using %d seed points\n', size(cornerArray,1));
+    
+    % modify indices since gradient eroded image stack
+    cornerArray(:,1) = cornerArray(:,1) - 2;
+    cornerArray(:,2) = cornerArray(:,2) - 2;
+    cornerArray(:,3) = cornerArray(:,3) - 2;
+    
+    featureList = [];
+    timeList = [];
+    
+    for j = 1:size(cornerArray,1)
+        
+        feature = cornerArray(j,:);
+        r = feature(1); c = feature(2); t = feature(3);
+        if ~(checkBounds(r-1,c-1,t-1,g2x) && checkBounds(r+2,c+2,t+2,g2x)) 
+            continue; 
+        end
+        
+        cuboidX = g2x(r-1:r+2,c-1:c+2,t-1:t+2);
+        cuboidY = g2y(r-1:r+2,c-1:c+2,t-1:t+2);
+        cuboidT = g2t(r-1:r+2,c-1:c+2,t-1:t+2);
+        
+        histVectors = histogramGradients(cuboidX, cuboidY, cuboidT);
+        if (sum(isnan(histVectors)) == 0)
+            fprintf('Adding feature %d\n',j);
+            featureList = cat(1,featureList,reshape(histVectors, 1, 80));
+            timeList = cat(1,timeList,t);
+        end
+    end
+    
+    
+    
+end
+
+function histVectors = histogramGradients(cubeGx, cubeGy, cubeGt)
+    phi = (1 + sqrt(5)) / 2;
+    icosN = [1 1 1;
+             1 1 -1;
+             1 -1 1;
+             1 -1 -1;
+             0 1 / phi phi;
+             0 1 / phi -phi;
+             1 / phi 1 / phi 0;
+             1 / phi -1 / phi 0;
+             phi 0 1/phi
+             phi 0 -1/phi];
+              
+    gradVal = zeros(4,4,4);
+    gradIndex = zeros(4,4,4);
+    histVectors = zeros(8,10);
+    
+    for k = 1:4 % pick slice out, dot into each icosahedron side
+        currentSlice(:,:,1) = cubeGx(:,:,k);
+        currentSlice(:,:,2) = cubeGy(:,:,k);
+        currentSlice(:,:,3) = cubeGt(:,:,k);
+
+        histogram = zeros(4,4,size(icosN,1));
+
+        for l = 1:size(icosN,1)
+            icosMat = repmat(reshape(icosN(l,:),1,1,3),4,4,1);
+            histogram(:,:,l) = abs(sum(icosMat .* currentSlice,3));
+            sliceNorm = sqrt(sum(currentSlice .^ 2,3));
+            histogram(:,:,l) = histogram(:,:,l) ./ sliceNorm; 
+        end
+        [maxVal, binIndex] = max(histogram,[],3);
+        gradVal(:,:,k) = maxVal;
+        gradIndex(:,:,k) = binIndex;
+    end
+    
+    for k = 1:8 % sum the histogram vectors
+        [r, c, t] = ind2sub([2 2 2],k);
+        r = 2 * r - 1; c = 2 * c - 1; t = 2 * t - 1;
+        
+        cellVal = gradVal(r:r+1,c:c+1,t:t+1);
+        cellIndex = gradIndex(r:r+1,c:c+1,t:t+1);
+        
+        for l = 1:8
+            histVectors(k,cellIndex(l)) = histVectors(k,cellIndex(l)) + cellVal(l);
+        end
+    end
+end
+
+function valid = checkBounds(r,c,t, mat)
+    if r >= 1 && c >= 1 && t >= 1 && ...
+          r <= size(mat,1) && c <= size(mat,2) && t <= size(mat,3)
+        valid = 1;
+    else
+        valid = 0;
+    end
+end

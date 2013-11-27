@@ -1,0 +1,14 @@
+function [counts, chains] = findSequenceChains(clusters, samples, k, timeList, numMotifs)
+    % Expect samples to be numSamples x numFeatures
+
+    numSamples = size(samples,1);
+
+    % Calculate densities
+
+    [kNearestArray, kNearestDist] = knnsearch(samples, samples(clusters,:),'K', k + 1);
+    
+    counts = histc(timeList(kNearestArray(:,2:end))',1:max(timeList));
+    imshow(uint8(100*counts))
+    
+    chains = kMeansClust(counts',numMotifs);
+end
