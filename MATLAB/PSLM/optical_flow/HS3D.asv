@@ -1,0 +1,65 @@
+function [ ux, uy, uz ] = HS3D( image1, image2, alpha, iterations, ...
+    uxInitial, uyInitial, uzInitial)
+%This function estimates deformations between two subsequent 3-D images
+%using Horn- optical flow equation. 
+%
+%   Description :  
+%
+%   -image1, image2 :   two subsequent images or frames
+%   -r : radius of the neighbourhood, default value is 2. 
+%
+%   Reference :
+%   Lucas, B. D., Kanade, T., 1981. An iterative image registration 
+%   technique with an application to stereo vision. In: Proceedings of the 
+%   7th international joint conference on Artificial intelligence - Volume 2.
+%   Morgan Kaufmann Publishers Inc., San Francisco, CA, USA, pp. 674-679.
+%
+%   Author : Mohammad Mustafa
+%   By courtesy of The University of Nottingham and Mirada Medical Limited,
+%   Oxford, UK
+%
+%   Published under a Creative Commons Attribution-Non-Commercial-Share Alike
+%   3.0 Unported Licence http://creativecommons.org/licenses/by-nc-sa/3.0/
+%   
+%   June 2012
+
+ux=zeros(size(image1)); uy=ux; uz=ux;
+
+if nargin==2
+    alpha=1; iterations=10; 
+elseif nargin==3
+    iterations=10;
+elseif nargin==6
+    ux=uxInitial; uy=uyInitial; uz=uzInitial;    
+end
+
+%image1=imfilter(image1,gaussianKernel3D(1,1));
+%image2=imfilter(image2,gaussianKernel3D(1,1));
+
+[Ix,Iy,Iz,It]=imageDerivatives3D(image1,image2);
+%[fx,fy,ft]=myImageDerivatives(image1,image2);
+
+%laplacian=[1/12 1/6 1/12; 1/6 0 1/6; 1/12 1/6 1/12];
+laplacian = zeros(3,3,3);
+laplacian(:,:,1) = [0 3 0;3 10 3;0 3 0];
+laplacian(:,:,3) = laplacian(:,:,1);
+laplacian(:,:,2) = [3 10 3;10 -96 10;3 10 3];
+laplacian=laplacian./96;
+
+for i=1:iterations
+    uxAvg=convn(ux,laplacian,'same');
+    uyAvg=convn(uy,laplacian,'same');
+    uzAvg=convn(uy,laplacian,'same');
+    ux=uxAvg - ( Ix.*( (Ix.*uxAvg) + (Iy.*uxAvg) + (Iz.*uzAvg) + It))...
+        ./ ( alpha.^2 + Ix.^2 + Iy.^ 2 + Iz.^ 2);
+    uy=uyAvg - ( Iy.*( (Ix.*uxAvg) + (Iy.*uxAvg) + (Iz.*uzAvg) + It))...
+        ./ ( alpha.^2 + Ix.^2 + Iy.^ 2 + Iz.^ 2);
+    uz=uzAvg - ( Iz.*( (Ix.*uxAvg) + (Iy.*uxAvg) + (Iz.*uzAvg) + It))...
+        ./ ( alpha.^2 + Ix.^2 + Iy.^ 2 + Iz.^ 2);
+end
+
+ux(isnan(ux))=0;
+uy(isnan(uy))=0;
+uz(isnan(uz))=0;
+end
+
