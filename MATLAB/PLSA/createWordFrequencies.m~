@@ -1,0 +1,67 @@
+function [frequencyTable] = createWordFrequencies(videoStack, timeSequences, staticThresh, docLength, boxSize)
+    % videoStack    - a hxwxf matrix, of f frames of height h and width w
+    % timeSequences - a fx1 vector of the associated frame time stamps (s)
+    % docLength     - the (target) length of a document (s)
+    
+    [height, width, nFrames] = size(videoStack);
+    
+    deltaTimes = diff(timeSequences);
+    avgDelta = mean(deltaTimes);
+    framesPerDoc = round(docLength / avgDelta)
+    
+    fBoxes = floor(nFrames / framesPerDoc);
+    hBoxes = floor(height / boxSize);
+    wBoxes = floor(width / boxSize);
+    
+    % compute the discretized optical flow vectors here
+    
+    fprintf('Computing optical flow\n');
+    [l, r, u, d, s] = computeOpticalFlowBins(videoStack, staticThresh);
+    
+    frequencyTable = zeros(fBoxes,5 * hBoxes * wBoxes);
+    for frame = 1:fBoxes
+        fprintf('Analyzing frame %d\n',frame);
+        frameRange = (frame - 1) * framesPerDoc + 1 : frame * framesPerDoc;
+        for height = 1:hBoxes
+            for width = 1:wBoxes
+                heightRange = (height - 1) * boxSize + 1 : height * boxSize;
+                widthRange = (width - 1) * boxSize + 1: width * boxSize;
+                
+                [X, Y, Z] = meshgrid(heightRange, widthRange, frameRange);
+                wordRange = sub2ind(size(videoStack),X, Y, Z);
+                wordRange = wordRange(:);
+                frequencyTable(frame,5 * (wBoxes * height * width - 1) + 1 : 5 * height * width) = ...
+                    [sum(l(wordRange)) sum(r(wordRange)) sum(u(wordRange)) sum(d(wordRange)) sum(s(wordRange))]; 
+
+
+            end
+        end
+
+        rWords = frequencyTable(frame,1:5:end);
+        uWords = frequencyTable(frame,2:5:end);
+        lWords = frequencyTable(frame,3:5:end);
+        dWords = frequencyTable(frame,4:5:end);
+        sWords = frequencyTable(frame,5:5:end);
+
+        boxSize = 1;
+        rFrame = imresize(reshape(rWords,hBoxes, wBoxes), boxSize);
+        uFrame = imresize(reshape(uWords,hBoxes, wBoxes), boxSize);
+        lFrame = imresize(reshape(lWords,hBoxes, wBoxes), boxSize);
+        dFrame = imresize(reshape(dWords,hBoxes, wBoxes), boxSize);
+        sFrame = imresize(reshape(sWords,hBoxes, wBoxes), boxSize);
+        figure,
+        subplot(2,3,1),
+        imshow(videoStack(:,:,frameRange));
+        subplot(2,3,2),
+        imshow(rFrame);
+        subplot(2,3,3),
+        imshow(uFrame);
+        subplot(2,3,4),
+        imshow(lFrame);
+        subplot(2,3,5),
+        imshow(dFrame);
+        subplot(2,3,6),
+        imshow(sFrame);
+    end
+end
+
