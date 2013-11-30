@@ -1,0 +1,25 @@
+function displayCorrelations(frequencies, videoStack, pw_z, topic, boxSize)
+    wBoxes = floor(size(videoStack,2) / boxSize);
+    hBoxes = floor(size(videoStack,1) / boxSize);
+    
+    labels = {'Right','Up','Left','Down','Static'};
+    for k = 0:4
+        subplot(5,2,1 + 2 * k),
+        titleStr = strcat('Topic ',num2str(topic),' - ',labels(k+1));
+        ylabel(titleStr);
+        imgProbs = imresize(reshape(pw_z(1 + k:5:end,topic),hBoxes,wBoxes),boxSize);
+
+        imshow(1000*imgProbs); 
+    end
+    
+    for i = 1:size(frequencies,1)
+        for k = 0:4
+            subplot(5,2,2 + 2 * k),
+            imgProbs = imresize(reshape(frequencies(i,1 + k:5:end),hBoxes,wBoxes),boxSize);
+
+            imshow(imgProbs); 
+        end
+        drawnow;
+    end
+end
+
