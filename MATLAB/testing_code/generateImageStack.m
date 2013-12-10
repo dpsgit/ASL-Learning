@@ -1,9 +1,8 @@
 function imageStack = generateImageStack(directory, ext) 
 	files = dir(directory);
-
 	numNames = [];
     for i = 1:length(files)
-    	if ~isempty(findstr(files(i).name,ext))
+    	if length(files(i).name) > length(ext) && ~isempty(findstr(files(i).name,ext))
     		image = imread(files(i).name);
     		if size(image,3) == 3
     			bwImage = rgb2gray(image);
