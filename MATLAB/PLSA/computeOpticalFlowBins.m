@@ -15,17 +15,22 @@ function [flowRight, flowUp, flowLeft, flowDown, flowStatic] = computeOpticalFlo
     for i = 1:nFrames - 1
         [u, v] = HS(videoStack(:,:,i),videoStack(:,:,i+1));
         
-        flowRight(:,:,i) = u > 0 & abs(u) <= abs(v);
-        flowUp(:,:,i) = v > 0 & abs(v) < abs(u);
-        flowLeft(:,:,i) = u < 0 & abs(u) <= abs(v);
-        flowDown(:,:,i) = v < 0 & abs(v) < abs(u);
+        % flowRight(:,:,i) = u > 0 & abs(u) <= abs(v);
+        % flowUp(:,:,i) = v > 0 & abs(v) < abs(u);
+        % flowLeft(:,:,i) = u < 0 & abs(u) <= abs(v);
+        % flowDown(:,:,i) = v < 0 & abs(v) < abs(u);
         
-        flowStatic(:,:,i) = u.^2 + v.^2 < staticThresh ^2;
+        flowRight(:,:,i) = u > 0 & u > abs(v);
+        flowUp(:,:,i) = v > 0 & v > abs(u);
+        flowLeft(:,:,i) = u < 0 & abs(u) > abs(v);
+        flowDown(:,:,i) = v < 0 & abs(v) > abs(u);
+
+        flowStatic(:,:,i) = (u.^2 + v.^2) < (staticThresh ^2);
         
     end
     
     % remove the regions that are static from the other flows
-    flowRight = flowRight & ~flowStatic;
+    flowRight = flowRight & ~flowStatic
     flowUp = flowUp & ~flowStatic;
     flowLeft = flowLeft & ~flowStatic;
     flowDown = flowDown & ~flowStatic;
