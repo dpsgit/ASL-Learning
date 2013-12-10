@@ -134,7 +134,7 @@ function Pz_dw = pLSA_Estep(Pw_z,Pd_z,Pz)
    
    % normalize posterior
    for k = 1:K
-      Pz_dw(:,:,k) = Pz_dw(:,:,k) .* (1./C);
+      Pz_dw(:,:,k) = Pz_dw(:,:,k) ./ C;
    end;  
 return;
 

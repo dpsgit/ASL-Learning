@@ -20,7 +20,8 @@ function [frequencyTable, startTimes] = createWordFrequencies(videoStack, timeSe
     
     frequencyTable = zeros(fBoxes,5 * hBoxes * wBoxes);
     startTimes  = zeros(fBoxes,1);
-    for frame = 1:fBoxes
+    for frame = 1:fBoxes - 1
+
         fprintf('Analyzing frame %d\n',frame);
         startTimes(frame) = (frame - 1) * framesPerDoc + 1;
         frameRange = (frame - 1) * framesPerDoc + 1 : frame * framesPerDoc;
@@ -34,7 +35,7 @@ function [frequencyTable, startTimes] = createWordFrequencies(videoStack, timeSe
                 wordRange = wordRange(:);
                 
                 freqStart = sub2ind([hBoxes wBoxes],height,width);
-                frequencyTable(frame,5 * (freqStart - 1) + 1: 5 * (freqStart - 1) + 5) = ...
+                frequencyTable(frame, 5 * (freqStart - 1) + 1: 5 * (freqStart - 1) + 5) = ...
                     [sum(l(wordRange)) sum(r(wordRange)) sum(u(wordRange)) sum(d(wordRange)) sum(s(wordRange))]; 
             end
         end

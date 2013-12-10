@@ -1,6 +1,8 @@
-function imageStack = generateImageStack(directory, ext) 
+function imageStack = generateImageStack(directory, ext, toSmooth) 
+    addpath('../PLSA/optical_flow');
 	files = dir(directory);
 	numNames = [];
+    counter = 1;
     for i = 1:length(files)
     	if length(files(i).name) > length(ext) && ~isempty(findstr(files(i).name,ext))
     		image = imread(files(i).name);
@@ -8,7 +10,13 @@ function imageStack = generateImageStack(directory, ext)
     			bwImage = rgb2gray(image);
     			image = bwImage(:,:,1);
     		end
-        	imageStack(:,:,i) = image;
+            if toSmooth
+                imageStack(:,:,counter) = smoothImg(image, 1);
+            else
+                imageStack(:,:,counter) = image;
+            end 
+
+            counter = counter + 1;
         	numNames = cat(1,numNames,str2num(regexprep(files(i).name,'[a-zA-Z.]','')));
         end
     end
