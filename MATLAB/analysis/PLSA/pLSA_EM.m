@@ -30,7 +30,6 @@
 
 function [Pw_z,Pd_z,Pz,Li] = pLSA_EM(X,K,Par)
 
-sum(sum(X,2) == 0)
 if nargin<3
    Par.maxit  = 100;
    Par.Leps   = 1;   
@@ -70,7 +69,7 @@ for it = 1:maxit
    [Pw_z,Pd_z,Pz] = pLSA_Mstep(X,Pz_dw);
    if Par.doplot>=2
      Pw_z
-   end;  
+   end; 
    
    % Evaluate data log-likelihood
    Li(it) = pLSA_logL(X,Pw_z,Pz,Pd_z) ;

@@ -3,8 +3,8 @@ function visualizeFrequencyTable(wordFrequencies, videoStack, boxSize, framesPer
     %       m = number of documents
     %       n = 5 * number of pixel boxes in (r u l d s) order
     
-    S.wBoxes = floor(size(videoStack,2) / boxSize);
-    S.hBoxes = floor(size(videoStack,1) / boxSize);
+    S.wBoxes = floor(size(videoStack,2) / boxSize)
+    S.hBoxes = floor(size(videoStack,1) / boxSize)
 
     S.vs = videoStack;
     S.wf = wordFrequencies;

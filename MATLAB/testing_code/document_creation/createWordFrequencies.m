@@ -7,7 +7,7 @@ function [frequencyTable, startTimes] = createWordFrequencies(videoStack, timeSe
     
     deltaTimes = diff(timeSequences);
     avgDelta = mean(deltaTimes);
-    framesPerDoc = round(docLength / avgDelta);
+    framesPerDoc = 1; round(docLength / avgDelta);
     
     fBoxes = floor(nFrames / framesPerDoc);
     hBoxes = floor(height / boxSize);

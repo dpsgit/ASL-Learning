@@ -1,8 +1,8 @@
-function n_taw = computeCorrelations(pw_z, frequencies)
-    topicSums = frequencies * pw_z;
+function n_taw = computeCorrelations(pw_z, frequencies, ep)
+    topicSums = frequencies * pw_z
 
-    possibleWords = pw_z ~= 0;
-    possibleFrequencies = frequencies * possibleWords;
+    possibleWords = pw_z < ep;
+    possibleFrequencies = frequencies * possibleWords
     
     n_taw = topicSums ./ possibleFrequencies;
 end
