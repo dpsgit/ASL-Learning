@@ -1,4 +1,4 @@
-function [frequencyTable, startTimes] = createWordFrequencies(videoStack, timeSequences, staticThresh, docLength, boxSize)
+function [frequencyTable, startTimes] = createWordFrequencies(videoStack, timeSequences, staticThresh, backgroundThresh, docLength, boxSize, r, u, l, d, s)
     % videoStack    - a hxwxf matrix, of f frames of height h and width w
     % timeSequences - a fx1 vector of the associated frame time stamps (s)
     % docLength     - the (target) length of a document (s)
@@ -7,7 +7,7 @@ function [frequencyTable, startTimes] = createWordFrequencies(videoStack, timeSe
     
     deltaTimes = diff(timeSequences);
     avgDelta = mean(deltaTimes);
-    framesPerDoc = 1; round(docLength / avgDelta);
+    framesPerDoc = round(docLength / avgDelta);
     
     fBoxes = floor(nFrames / framesPerDoc);
     hBoxes = floor(height / boxSize);
@@ -15,11 +15,19 @@ function [frequencyTable, startTimes] = createWordFrequencies(videoStack, timeSe
     
     % compute the discretized optical flow vectors here
     
-    fprintf('Computing optical flow\n');
-    [l, r, u, d, s] = computeOpticalFlowBins(videoStack, staticThresh);
+    if nargin < 11
+        fprintf('Computing optical flow\n');
+        [r, u, l, d, s] = computeOpticalFlowBins(videoStack, staticThresh);
+    end
     
     frequencyTable = zeros(fBoxes,5 * hBoxes * wBoxes);
     startTimes  = zeros(fBoxes,1);
+
+    %backgroundMask = repmat(sum(s,3) > nFrames * backgroundThresh,1,1,nFrames - 1);
+    
+
+    %r = r.* backgroundMask; u = u .* backgroundMask; l = l .* backgroundMask; d = d .* backgroundMask; s = s .* backgroundMask;
+
     for frame = 1:fBoxes - 1
 
         fprintf('Analyzing frame %d\n',frame);

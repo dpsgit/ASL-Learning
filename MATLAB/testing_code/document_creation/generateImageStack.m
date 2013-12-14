@@ -1,5 +1,5 @@
 function imageStack = generateImageStack(directory, ext, toSmooth) 
-    addpath('../PLSA/optical_flow');
+    %addpath('../PLSA/optical_flow');
 	files = dir(directory);
 	numNames = [];
     counter = 1;

@@ -31,9 +31,10 @@
 function [Pw_z,Pd_z,Pz,Li] = pLSA_EM(X,K,Par)
 
 if nargin<3
-   Par.maxit  = 100;
+   Par.maxit  = 10000;
    Par.Leps   = 1;   
    Par.doplot = 0;
+   Par.whentosave = 50;
 end;   
 
 if Par.doplot
@@ -58,7 +59,8 @@ Li    = [];
 maxit = Par.maxit;
 
 % EM algorithm
-for it = 1:maxit   
+for it = 1:maxit 
+tic  
    fprintf('Iteration %d ',it);
    
 
@@ -80,6 +82,12 @@ for it = 1:maxit
       plot(Li,'b.-');
    end;
       
+   if mod(it,Par.whentosave) == 0
+       probPackage.pw_z = Pw_z;
+       probPackage.pd_z = Pd_z;
+       probPackage.pz = Pz;
+       save(strcat('probPackage',num2str(i)),'probPackage');
+   end
    
    % convergence?
    dLi = 0;
@@ -88,6 +96,7 @@ for it = 1:maxit
      if dLi < Par.Leps, break; end;   
    end;
    fprintf('dLi=%f \n',dLi);
+   toc
 end;
 
 

@@ -3,8 +3,8 @@ function visualizeTopicProfiles(pw_z, videoStack, boxSize)
     %       m = number of documents
     %       n = 5 * number of pixel boxes in (r u l d s) order
     
-    S.wBoxes = 64; %floor(size(videoStack,2) / boxSize);
-    S.hBoxes = 48; %floor(size(videoStack,1) / boxSize);
+    S.wBoxes = floor(size(videoStack,2) / boxSize);
+    S.hBoxes = floor(size(videoStack,1) / boxSize);
 
     S.zNum = 1;
     S.boxSize = boxSize;
@@ -93,7 +93,7 @@ switch h  % Who called?
         printNormImg(sFrame, 'Static Word');
         subplot(2,3,6),
         printNormImg(mFrame, 'All Motion Words');
-
+        
     otherwise
         % Do nothing, or whatever.
 end

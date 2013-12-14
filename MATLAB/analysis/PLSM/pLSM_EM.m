@@ -8,7 +8,7 @@ function [Pz_d, Pts_zd, Pwtr_z] = pLSM_EM(counts, nMotifs, Tz)
 	% Nz = #topics (from pLSA)
 
 	if nargin<4
-	   Par.maxit  = 400;
+	   Par.maxit  = 200;
 	   Par.Leps   = 1; 
 	end;   
 
